@@ -2,6 +2,7 @@ package com.practice.rest_crud.controller;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,13 +20,14 @@ import com.practice.rest_crud.service.CloudVendorService;
 @RequestMapping("/cloudvendor")
 public class CloudVendorController {
 	
-	CloudVendorService cloudVendorService;
+	@Autowired
+	private CloudVendorService cloudVendorService;
 	
 	
-	public CloudVendorController(CloudVendorService cloudVendorService) {
-		super();
-		this.cloudVendorService = cloudVendorService;
-	}
+//	public CloudVendorController(CloudVendorService cloudVendorService) {
+//		super();
+//		this.cloudVendorService = cloudVendorService;
+//	}
 
 	@GetMapping("{vendorId}")
 	public CloudVendor getCloudVendorDetails(@PathVariable("vendorId") String vendorId) {

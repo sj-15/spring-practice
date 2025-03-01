@@ -2,6 +2,7 @@ package com.practice.rest_crud.service;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.practice.rest_crud.model.CloudVendor;
@@ -10,12 +11,13 @@ import com.practice.rest_crud.repository.CloudVendorRepository;
 @Service
 public class CloudVendorServiceImpl implements CloudVendorService{
 	
-	CloudVendorRepository cloudVendorRepository;
+	@Autowired
+	private CloudVendorRepository cloudVendorRepository;
 
-	public CloudVendorServiceImpl(CloudVendorRepository cloudVendorRepository) {
-		super();
-		this.cloudVendorRepository = cloudVendorRepository;
-	}
+//	public CloudVendorServiceImpl(CloudVendorRepository cloudVendorRepository) {
+//		super();
+//		this.cloudVendorRepository = cloudVendorRepository;
+//	}
 
 	@Override
 	public String createCloudVendor(CloudVendor cloudVendor) {
