@@ -9,10 +9,10 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.jwtAuth</groupId>
-	<artifactId>generic-service</artifactId>
+	<artifactId>smp-app</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>generic-service</name>
-	<description>Demo project for Spring Boot</description>
+	<name>Service Market Place</name>
+	<description>Service Market Place</description>
 	<url/>
 	<licenses>
 		<license/>

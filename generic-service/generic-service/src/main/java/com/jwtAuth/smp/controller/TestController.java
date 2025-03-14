@@ -18,7 +18,7 @@ public class TestController {
     private CommonUtil commonUtil;
     @GetMapping("/all")
     public String allAccess(){
-        System.out.println(commonUtil.loggedInUser().getEmail());
+//        System.out.println(commonUtil.loggedInUser().getEmail());
         return "Public Content";
     }
 
