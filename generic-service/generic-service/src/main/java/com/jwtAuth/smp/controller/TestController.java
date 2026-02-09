@@ -1,7 +1,5 @@
 package com.jwtAuth.smp.controller;
 
-import com.jwtAuth.smp.util.CommonUtil;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,8 +12,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/test")
 public class TestController {
 
-    @Autowired
-    private CommonUtil commonUtil;
+    // @Autowired
+    // private CommonUtil commonUtil;
+
     @GetMapping("/all")
     public String allAccess(){
 //        System.out.println(commonUtil.loggedInUser().getEmail());
