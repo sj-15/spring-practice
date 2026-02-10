@@ -1,5 +1,7 @@
 package com.spring_security_practice.AdvAuthService.controller;
 
+import com.spring_security_practice.AdvAuthService.dto.LoginRequeestDTO;
+import com.spring_security_practice.AdvAuthService.dto.RegisterRequestDTO;
 import com.spring_security_practice.AdvAuthService.entity.User;
 import com.spring_security_practice.AdvAuthService.model.AuthenticationResponse;
 import com.spring_security_practice.AdvAuthService.repository.UserRepository;
@@ -34,13 +36,22 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<String> createUser(@RequestBody User user) {
+    public ResponseEntity<AuthenticationResponse> createUser(@RequestBody RegisterRequestDTO user) {
         try {
-            return ResponseEntity.status(HttpStatus.CREATED).body(authenticationService.register(user).getToken());
+            return ResponseEntity.status(HttpStatus.CREATED).body(authenticationService.register(user));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
 
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<AuthenticationResponse> login(@RequestBody LoginRequeestDTO user) {
+        try {
+            return ResponseEntity.ok(authenticationService.authenticate(user));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+        }
     }
 
     @GetMapping("/{email}")

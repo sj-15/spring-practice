@@ -20,6 +20,11 @@ spring:
         format_sql: true
         dialect: org.hibernate.dialect.MySQLDialect
 
+  security:
+    secret: d75922fedd2165d8c5c7a18178e7362031e29c3baecd33689d8b03c18f7dac75
+    access-token-expiration: 3600000
+    refresh-token-expiration: 60
+
 logging:
   level:
     org.hibernate.SQL: DEBUG
