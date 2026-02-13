@@ -7,6 +7,8 @@ import com.spring_security_practice.AdvAuthService.model.AuthenticationResponse;
 import com.spring_security_practice.AdvAuthService.repository.UserRepository;
 import com.spring_security_practice.AdvAuthService.service.AuthenticationService;
 import com.spring_security_practice.AdvAuthService.service.CustomUserDetailsService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -56,7 +58,7 @@ public class AuthController {
 
     @GetMapping("/{email}")
     public ResponseEntity<User> getUser(@PathVariable String email) {
-        return ResponseEntity.ok(userRepository.findByEmail(email));
+        return ResponseEntity.ok(userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("Email not found")));
     }
 
     @GetMapping("/all")
@@ -64,4 +66,8 @@ public class AuthController {
         return ResponseEntity.ok(userRepository.findAll());
     }
 
+    @PostMapping("/refresh_token")
+    public ResponseEntity refreshToken(HttpServletRequest request, HttpServletResponse response){
+        return authenticationService.refreshToken(request, response);
+    }
 }

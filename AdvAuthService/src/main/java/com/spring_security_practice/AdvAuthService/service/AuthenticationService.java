@@ -3,11 +3,18 @@ package com.spring_security_practice.AdvAuthService.service;
 import com.spring_security_practice.AdvAuthService.dto.LoginRequeestDTO;
 import com.spring_security_practice.AdvAuthService.dto.RegisterRequestDTO;
 import com.spring_security_practice.AdvAuthService.entity.Role;
+import com.spring_security_practice.AdvAuthService.entity.Token;
 import com.spring_security_practice.AdvAuthService.entity.User;
 import com.spring_security_practice.AdvAuthService.model.AuthenticationResponse;
 import com.spring_security_practice.AdvAuthService.repository.RoleRepository;
+import com.spring_security_practice.AdvAuthService.repository.TokenRepository;
 import com.spring_security_practice.AdvAuthService.repository.UserRepository;
 import com.spring_security_practice.AdvAuthService.security.service.JwtService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -24,14 +31,16 @@ public class AuthenticationService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final RoleRepository roleRepository;
+    private final TokenRepository tokenRepository;
 
 
-    public AuthenticationService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService, AuthenticationManager authenticationManager, RoleRepository roleRepository) {
+    public AuthenticationService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService, AuthenticationManager authenticationManager, RoleRepository roleRepository, TokenRepository tokenRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.authenticationManager = authenticationManager;
         this.roleRepository = roleRepository;
+        this.tokenRepository = tokenRepository;
     }
 
     // ----- REGISTRATION ------
@@ -59,6 +68,7 @@ public class AuthenticationService {
         String accessToken = jwtService.generateAccessToken(userDetails);
         String refreshToken = jwtService.generateRefreshToken(userDetails);
 
+        saveUserToken(accessToken, refreshToken, user);
         return new AuthenticationResponse(accessToken, refreshToken);
     }
 
@@ -75,4 +85,47 @@ public class AuthenticationService {
 
         return new AuthenticationResponse(accessToken, refreshToken);
     }
+
+    // ----- LOGOUT -----
+
+    // ----- Save User Token -----
+    private void saveUserToken(String accessToken, String refreshToken, User user) {
+        Token token = new Token();
+        token.setAccessToken(accessToken);
+        token.setRefreshToken(refreshToken);
+        token.setLoggedOut(false);
+        token.setUser(user);
+        tokenRepository.save(token);
+    }
+
+    // ----- Refresh Token -----
+    public ResponseEntity refreshToken(HttpServletRequest request, HttpServletResponse response) {
+        String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return new ResponseEntity(HttpStatus.UNAUTHORIZED);
+        }
+
+        String token = authHeader.substring(7);
+        String username = jwtService.extractUsername(token);
+
+        User user = userRepository.findByEmail(username).orElseThrow(() -> new RuntimeException("No user found"));
+
+        if (jwtService.isValidRefreshToken(token, user)) {
+            UserDetails userDetails = org.springframework.security.core.userdetails.User
+                    .withUsername(user.getEmail())
+                    .password(user.getPassword())
+                    .authorities(user.getRoles())
+                    .build();
+
+            String accessToken = jwtService.generateAccessToken(userDetails);
+            String refreshToken = jwtService.generateRefreshToken(userDetails);
+            saveUserToken(accessToken,refreshToken, user);
+            return new ResponseEntity(new AuthenticationResponse(accessToken, refreshToken), HttpStatus.OK);
+        }
+        return new ResponseEntity(HttpStatus.UNAUTHORIZED);
+    }
+
+
+
 }

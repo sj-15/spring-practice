@@ -1,6 +1,7 @@
 package com.spring_security_practice.AdvAuthService.security.service;
 
 import com.spring_security_practice.AdvAuthService.entity.User;
+import com.spring_security_practice.AdvAuthService.repository.TokenRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
@@ -34,6 +35,11 @@ public class JwtService {
     private Long refreshTokenExpiration;
 
     private SecretKey signingKey;
+    private final TokenRepository tokenRepository;
+
+    public JwtService(TokenRepository tokenRepository) {
+        this.tokenRepository = tokenRepository;
+    }
 
     @PostConstruct
     public void init() {
@@ -74,8 +80,29 @@ public class JwtService {
     public boolean isValid(String token, UserDetails user) {
         try {
             String username = extractUsername(token);
-            return (username.equals(user.getUsername())) && !isTokenExpired(token);
-        }catch (JwtException | IllegalArgumentException ex){
+
+            boolean validToken = tokenRepository
+                    .findByAccessToken(token)
+                    .map(t -> !t.isLoggedOut())
+                    .orElse(false);
+
+            return (username.equals(user.getUsername())) && !isTokenExpired(token) && validToken;
+        } catch (JwtException | IllegalArgumentException ex) {
+            return false;
+        }
+    }
+
+    public boolean isValidRefreshToken(String token, User user) {
+        try {
+            String username = extractUsername(token);
+
+            boolean validRefreshToken = tokenRepository
+                    .findByRefreshToken(token)
+                    .map(t -> !t.isLoggedOut())
+                    .orElse(false);
+
+            return (username.equals(user.getEmail())) && !isTokenExpired(token) && validRefreshToken;
+        } catch (JwtException | IllegalArgumentException ex) {
             return false;
         }
     }
