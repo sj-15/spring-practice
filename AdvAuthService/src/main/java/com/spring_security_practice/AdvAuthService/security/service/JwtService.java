@@ -41,8 +41,15 @@ public class JwtService {
         this.signingKey = Keys.hmacShaKeyFor(keyBytes);
     }
 
+    public String generateAccessToken(UserDetails userDetails) {
+        return generateToken(userDetails, accessTokenExpiration);
+    }
 
-    public String generateToken(UserDetails userDetails) {
+    public String generateRefreshToken(UserDetails userDetails) {
+        return generateToken(userDetails, refreshTokenExpiration);
+    }
+
+    public String generateToken(UserDetails userDetails, Long tokenExpiration) {
         Map<String, Object> claims = Map.of("roles", extractRoles(userDetails));
 
         Instant now = Instant.now();
@@ -50,7 +57,7 @@ public class JwtService {
                 .builder()
                 .subject(userDetails.getUsername())
                 .issuedAt(Date.from(now))
-                .expiration(Date.from(now.plusMillis(accessTokenExpiration)))
+                .expiration(Date.from(now.plusMillis(tokenExpiration)))
                 .signWith(signingKey)
                 .compact();
         return token;

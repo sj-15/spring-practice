@@ -1,14 +1,18 @@
 package com.spring_security_practice.AdvAuthService.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
+
+@AllArgsConstructor
+@Getter
+@Setter
 public class AuthenticationResponse {
 
-    private String token;
+    @JsonProperty("access_token")
+    private String accessToken;
 
-    public AuthenticationResponse(String token) {
-        this.token = token;
-    }
-
-    public String getToken() {
-        return token;
-    }
+    @JsonProperty("refresh_token")
+    private String refreshToken;
 }

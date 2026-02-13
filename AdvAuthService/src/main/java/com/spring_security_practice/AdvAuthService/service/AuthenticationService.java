@@ -56,9 +56,10 @@ public class AuthenticationService {
                 .authorities(user.getRoles())
                 .build();
 
-        String token = jwtService.generateToken(userDetails);
+        String accessToken = jwtService.generateAccessToken(userDetails);
+        String refreshToken = jwtService.generateRefreshToken(userDetails);
 
-        return new AuthenticationResponse(token);
+        return new AuthenticationResponse(accessToken, refreshToken);
     }
 
     // ----- LOGIN ------
@@ -69,8 +70,9 @@ public class AuthenticationService {
         ));
 
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        String token = jwtService.generateToken(userDetails);
+        String accessToken = jwtService.generateAccessToken(userDetails);
+        String refreshToken = jwtService.generateRefreshToken(userDetails);
 
-        return new AuthenticationResponse(token);
+        return new AuthenticationResponse(accessToken, refreshToken);
     }
 }
