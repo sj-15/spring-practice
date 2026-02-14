@@ -44,6 +44,7 @@ public class AuthenticationService {
         this.tokenRepository = tokenRepository;
     }
 
+
     // ----- Build UserDetails --------
     private UserDetails buildUserDetails(User user) {
         return org.springframework.security.core.userdetails.User
@@ -96,6 +97,7 @@ public class AuthenticationService {
         return new AuthenticationResponse(accessToken, refreshToken);
     }
 
+
     // ----- Save User Token -----
     private void saveUserToken(String accessToken, String refreshToken, User user) {
         Token token = new Token();
@@ -129,15 +131,15 @@ public class AuthenticationService {
         User user = userRepository.findByEmail(username).orElseThrow(() -> new RuntimeException("No user found"));
 
         if (jwtService.isValidRefreshToken(token, user)) {
-            System.out.println("Refresh token is valid");
-            UserDetails userDetails = buildUserDetails(user);
+            UserDetails userDetails = org.springframework.security.core.userdetails.User
+                    .withUsername(user.getEmail())
+                    .password(user.getPassword())
+                    .authorities(user.getRoles())
+                    .build();
 
             String accessToken = jwtService.generateAccessToken(userDetails);
             String refreshToken = jwtService.generateRefreshToken(userDetails);
-
-            revokeAllUserToken(user);
-            saveUserToken(accessToken, refreshToken, user);
-
+            saveUserToken(accessToken,refreshToken, user);
             return new ResponseEntity(new AuthenticationResponse(accessToken, refreshToken), HttpStatus.OK);
         }
         return new ResponseEntity(HttpStatus.UNAUTHORIZED);

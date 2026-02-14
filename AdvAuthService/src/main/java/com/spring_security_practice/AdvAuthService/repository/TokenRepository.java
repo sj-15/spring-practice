@@ -2,6 +2,7 @@ package com.spring_security_practice.AdvAuthService.repository;
 
 import com.spring_security_practice.AdvAuthService.entity.Token;
 import org.springframework.data.jpa.repository.JpaRepository;
+
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
