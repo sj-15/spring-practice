@@ -42,6 +42,7 @@ public class AuthenticationService {
         this.authenticationManager = authenticationManager;
         this.roleRepository = roleRepository;
         this.tokenRepository = tokenRepository;
+<<<<<<< HEAD
     }
 
     // ----- Build UserDetails --------
@@ -51,6 +52,8 @@ public class AuthenticationService {
                 .password(user.getPassword())
                 .authorities(user.getRoles())
                 .build();
+=======
+>>>>>>> 64c7e89bba940cc3ce550a71aa125823eb7daa65
     }
 
     // ----- REGISTRATION ------
@@ -98,7 +101,10 @@ public class AuthenticationService {
 
     // ----- LOGOUT -----
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 64c7e89bba940cc3ce550a71aa125823eb7daa65
     // ----- Save User Token -----
     private void saveUserToken(String accessToken, String refreshToken, User user) {
         Token token = new Token();
@@ -109,6 +115,7 @@ public class AuthenticationService {
         tokenRepository.save(token);
     }
 
+<<<<<<< HEAD
     // ----- Revoke All User Token ------
     private void revokeAllUserToken(User user) {
         List<Token> tokens = tokenRepository.findAllAccessTokensByUser(user.getId());
@@ -118,6 +125,8 @@ public class AuthenticationService {
         tokenRepository.saveAll(tokens);
     }
 
+=======
+>>>>>>> 64c7e89bba940cc3ce550a71aa125823eb7daa65
     // ----- Refresh Token -----
     public ResponseEntity refreshToken(HttpServletRequest request, HttpServletResponse response) {
         String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
@@ -132,6 +141,7 @@ public class AuthenticationService {
         User user = userRepository.findByEmail(username).orElseThrow(() -> new RuntimeException("No user found"));
 
         if (jwtService.isValidRefreshToken(token, user)) {
+<<<<<<< HEAD
             UserDetails userDetails = buildUserDetails(user);
 
             String accessToken = jwtService.generateAccessToken(userDetails);
@@ -139,10 +149,25 @@ public class AuthenticationService {
 
             revokeAllUserToken(user);
             saveUserToken(accessToken, refreshToken, user);
+=======
+            UserDetails userDetails = org.springframework.security.core.userdetails.User
+                    .withUsername(user.getEmail())
+                    .password(user.getPassword())
+                    .authorities(user.getRoles())
+                    .build();
+
+            String accessToken = jwtService.generateAccessToken(userDetails);
+            String refreshToken = jwtService.generateRefreshToken(userDetails);
+            saveUserToken(accessToken,refreshToken, user);
+>>>>>>> 64c7e89bba940cc3ce550a71aa125823eb7daa65
             return new ResponseEntity(new AuthenticationResponse(accessToken, refreshToken), HttpStatus.OK);
         }
         return new ResponseEntity(HttpStatus.UNAUTHORIZED);
     }
 
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 64c7e89bba940cc3ce550a71aa125823eb7daa65
 }
