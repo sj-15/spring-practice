@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.List;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -28,14 +29,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         this.customUserDetailsService = customUserDetailsService;
     }
 
+    private static final List<String> PUBLIC_URLS =
+            List.of("/api/auth/login", "/api/auth/register", "/api/auth/refresh_token");
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
 
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+
+        if (PUBLIC_URLS.contains(request.getServletPath())) {
             filterChain.doFilter(request, response);
             return;
         }
+
 
         String token = authHeader.substring(7);
         try {
