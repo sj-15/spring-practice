@@ -96,9 +96,6 @@ public class AuthenticationService {
         return new AuthenticationResponse(accessToken, refreshToken);
     }
 
-    // ----- LOGOUT -----
-
-
     // ----- Save User Token -----
     private void saveUserToken(String accessToken, String refreshToken, User user) {
         Token token = new Token();
@@ -132,6 +129,7 @@ public class AuthenticationService {
         User user = userRepository.findByEmail(username).orElseThrow(() -> new RuntimeException("No user found"));
 
         if (jwtService.isValidRefreshToken(token, user)) {
+            System.out.println("Refresh token is valid");
             UserDetails userDetails = buildUserDetails(user);
 
             String accessToken = jwtService.generateAccessToken(userDetails);
@@ -139,10 +137,9 @@ public class AuthenticationService {
 
             revokeAllUserToken(user);
             saveUserToken(accessToken, refreshToken, user);
+
             return new ResponseEntity(new AuthenticationResponse(accessToken, refreshToken), HttpStatus.OK);
         }
         return new ResponseEntity(HttpStatus.UNAUTHORIZED);
     }
-
-
 }
