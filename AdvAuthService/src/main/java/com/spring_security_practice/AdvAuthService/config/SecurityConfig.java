@@ -39,10 +39,14 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 //endpoints authorization
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.GET, "/api/auth/**").hasAnyRole("ADMIN", "SUPPORT")
+                        // === Public ===
                         .requestMatchers(
-                                HttpMethod.POST, "/api/auth/**"
+                                "/api/auth/**", "/api/v1/user/**"
                         ).permitAll()
+                        // === Admin ===
+                        .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+                        // === Admin & Support ===
+                        .requestMatchers("/api/v1/support/**").hasAnyRole("ADMIN", "SUPPORT")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
