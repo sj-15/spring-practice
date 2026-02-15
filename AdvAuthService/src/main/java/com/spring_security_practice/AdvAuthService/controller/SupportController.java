@@ -33,4 +33,10 @@ public class SupportController {
                 .findByEmail(email).orElseThrow(() ->
                         new RuntimeException("Email not found")));
     }
+
+    @GetMapping("/readuser")
+    @PreAuthorize("hasAuthority('READ_USER')")
+    public ResponseEntity<String> readUser(){
+        return ResponseEntity.ok("Can read user");
+    }
 }

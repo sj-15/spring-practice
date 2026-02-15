@@ -118,11 +118,11 @@ public class AuthenticationService {
     }
 
     // ----- Refresh Token -----
-    public ResponseEntity refreshToken(HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity<Object> refreshToken(HttpServletRequest request, HttpServletResponse response) {
         String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            return new ResponseEntity(HttpStatus.UNAUTHORIZED);
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
 
         String token = authHeader.substring(7);
@@ -140,8 +140,8 @@ public class AuthenticationService {
             String accessToken = jwtService.generateAccessToken(userDetails);
             String refreshToken = jwtService.generateRefreshToken(userDetails);
             saveUserToken(accessToken,refreshToken, user);
-            return new ResponseEntity(new AuthenticationResponse(accessToken, refreshToken), HttpStatus.OK);
+            return new ResponseEntity<>(new AuthenticationResponse(accessToken, refreshToken), HttpStatus.OK);
         }
-        return new ResponseEntity(HttpStatus.UNAUTHORIZED);
+        return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
     }
 }
