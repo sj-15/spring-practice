@@ -15,10 +15,7 @@ import lombok.Setter;
 public class Token {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-<<<<<<< HEAD
     @Column(name = "id")
-=======
->>>>>>> 64c7e89bba940cc3ce550a71aa125823eb7daa65
     private Long id;
 
     @Column(name = "access_token")

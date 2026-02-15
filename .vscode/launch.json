@@ -2,6 +2,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "AdvAuthServiceApplication",
+            "request": "launch",
+            "mainClass": "com.spring_security_practice.AdvAuthService.AdvAuthServiceApplication",
+            "projectName": "AdvAuthService"
+        },
+        {
+            "type": "java",
             "name": "Spring Boot-EbmsSpringApplication<ebms-spring>",
             "request": "launch",
             "cwd": "${workspaceFolder}",
