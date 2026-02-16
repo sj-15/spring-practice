@@ -6,6 +6,7 @@ import com.spring_security_practice.AdvAuthService.model.AuthenticationResponse;
 import com.spring_security_practice.AdvAuthService.service.AuthenticationService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,22 +24,13 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<AuthenticationResponse> createUser(@RequestBody RegisterRequestDTO user) {
-        try {
+    public ResponseEntity<AuthenticationResponse> createUser(@Valid @RequestBody RegisterRequestDTO user) {
             return ResponseEntity.status(HttpStatus.CREATED).body(authenticationService.register(user));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
-
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthenticationResponse> login(@RequestBody LoginRequeestDTO user) {
-        try {
+    public ResponseEntity<AuthenticationResponse> login(@Valid @RequestBody LoginRequeestDTO user) {
             return ResponseEntity.ok(authenticationService.authenticate(user));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
-        }
     }
 
 

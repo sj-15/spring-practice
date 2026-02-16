@@ -5,6 +5,12 @@ import com.spring_security_practice.AdvAuthService.dto.RegisterRequestDTO;
 import com.spring_security_practice.AdvAuthService.entity.Role;
 import com.spring_security_practice.AdvAuthService.entity.Token;
 import com.spring_security_practice.AdvAuthService.entity.User;
+import com.spring_security_practice.AdvAuthService.exception.auth.InvalidCredentialsException;
+import com.spring_security_practice.AdvAuthService.exception.auth.RefreshTokenInvalidException;
+import com.spring_security_practice.AdvAuthService.exception.common.ResourceNotFoundException;
+import com.spring_security_practice.AdvAuthService.exception.common.ValidationException;
+import com.spring_security_practice.AdvAuthService.exception.user.DuplicateEmailException;
+import com.spring_security_practice.AdvAuthService.exception.user.UserNotFoundException;
 import com.spring_security_practice.AdvAuthService.model.AuthenticationResponse;
 import com.spring_security_practice.AdvAuthService.repository.RoleRepository;
 import com.spring_security_practice.AdvAuthService.repository.TokenRepository;
@@ -16,6 +22,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -58,43 +65,51 @@ public class AuthenticationService {
     public AuthenticationResponse register(RegisterRequestDTO request) {
 
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("User already exists");
+            throw new DuplicateEmailException();
         }
+        try {
+            User user = new User();
+            user.setEmail(request.getEmail());
+            user.setPassword(passwordEncoder.encode(request.getPassword()));
 
-        User user = new User();
-        user.setEmail(request.getEmail());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
+            Role role = roleRepository.findByName("ROLE_USER").orElseThrow(ResourceNotFoundException::new);
+            user.setRoles(Set.of(role));
 
-        Role role = roleRepository.findByName("ROLE_USER").orElseThrow(() -> new RuntimeException("Role not found"));
-        user.setRoles(Set.of(role));
+            user = userRepository.save(user);
 
-        user = userRepository.save(user);
+            UserDetails userDetails = buildUserDetails(user);
 
-        UserDetails userDetails = buildUserDetails(user);
+            String accessToken = jwtService.generateAccessToken(userDetails);
+            String refreshToken = jwtService.generateRefreshToken(userDetails);
 
-                String accessToken = jwtService.generateAccessToken(userDetails);
-        String refreshToken = jwtService.generateRefreshToken(userDetails);
-
-        saveUserToken(accessToken, refreshToken, user);
-        return new AuthenticationResponse(accessToken, refreshToken);
+            saveUserToken(accessToken, refreshToken, user);
+            return new AuthenticationResponse(accessToken, refreshToken);
+        } catch (ValidationException ex) {
+            throw new ValidationException();
+        }
     }
 
     // ----- LOGIN ------
     public AuthenticationResponse authenticate(LoginRequeestDTO request) {
-        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
-                request.getEmail(),
-                request.getPassword()
-        ));
 
-        User user = userRepository.findByEmail(request.getEmail()).orElseThrow(() -> new RuntimeException("User not found"));
+        try {
+            Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
+                    request.getEmail(),
+                    request.getPassword()
+            ));
 
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        String accessToken = jwtService.generateAccessToken(userDetails);
-        String refreshToken = jwtService.generateRefreshToken(userDetails);
+            User user = userRepository.findByEmail(request.getEmail()).orElseThrow(() -> new RuntimeException("User not found"));
 
-        saveUserToken(accessToken, refreshToken, user);
+            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+            String accessToken = jwtService.generateAccessToken(userDetails);
+            String refreshToken = jwtService.generateRefreshToken(userDetails);
 
-        return new AuthenticationResponse(accessToken, refreshToken);
+            saveUserToken(accessToken, refreshToken, user);
+
+            return new AuthenticationResponse(accessToken, refreshToken);
+        } catch (BadCredentialsException e) {
+            throw new InvalidCredentialsException();
+        }
     }
 
 
@@ -122,13 +137,13 @@ public class AuthenticationService {
         String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+            throw new RefreshTokenInvalidException();
         }
 
         String token = authHeader.substring(7);
         String username = jwtService.extractUsername(token);
 
-        User user = userRepository.findByEmail(username).orElseThrow(() -> new RuntimeException("No user found"));
+        User user = userRepository.findByEmail(username).orElseThrow(UserNotFoundException::new);
 
         if (jwtService.isValidRefreshToken(token, user)) {
             UserDetails userDetails = org.springframework.security.core.userdetails.User
@@ -139,9 +154,9 @@ public class AuthenticationService {
 
             String accessToken = jwtService.generateAccessToken(userDetails);
             String refreshToken = jwtService.generateRefreshToken(userDetails);
-            saveUserToken(accessToken,refreshToken, user);
+            saveUserToken(accessToken, refreshToken, user);
             return new ResponseEntity<>(new AuthenticationResponse(accessToken, refreshToken), HttpStatus.OK);
         }
-        return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        throw new RefreshTokenInvalidException();
     }
 }

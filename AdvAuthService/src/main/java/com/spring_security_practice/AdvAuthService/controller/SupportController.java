@@ -1,7 +1,9 @@
 package com.spring_security_practice.AdvAuthService.controller;
 
 import com.spring_security_practice.AdvAuthService.entity.User;
+import com.spring_security_practice.AdvAuthService.exception.user.UserNotFoundException;
 import com.spring_security_practice.AdvAuthService.repository.UserRepository;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,10 +30,9 @@ public class SupportController {
 
     @GetMapping("/{email}")
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPPORT')")
-    public ResponseEntity<User> getUser(@PathVariable String email) {
+    public ResponseEntity<User> getUser(@Valid @PathVariable String email) {
         return ResponseEntity.ok(userRepository
-                .findByEmail(email).orElseThrow(() ->
-                        new RuntimeException("Email not found")));
+                .findByEmail(email).orElseThrow(UserNotFoundException::new));
     }
 
     @GetMapping("/readuser")
