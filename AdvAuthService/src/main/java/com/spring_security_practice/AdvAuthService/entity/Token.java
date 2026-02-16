@@ -18,10 +18,10 @@ public class Token {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "access_token")
+    @Column(name = "access_token", columnDefinition = "TEXT")
     private String accessToken;
 
-    @Column(name = "refresh_token")
+    @Column(name = "refresh_token", columnDefinition = "TEXT")
     private String refreshToken;
 
     @Column(name = "is_logged_out")

@@ -15,10 +15,7 @@ import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
 import java.time.Instant;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -56,11 +53,15 @@ public class JwtService {
     }
 
     public String generateToken(UserDetails userDetails, Long tokenExpiration) {
-        Map<String, Object> claims = Map.of("roles", extractRoles(userDetails));
+        Collection<String> roles = extractRoles(userDetails);
+        Set<String> permissions = extractPermissions(userDetails);
+        Map<String, Object> claims = Map.of("roles", roles,
+                "permissions", permissions);
 
         Instant now = Instant.now();
         String token = Jwts
                 .builder()
+                .claims(claims)
                 .subject(userDetails.getUsername())
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(now.plusMillis(tokenExpiration)))
@@ -75,6 +76,16 @@ public class JwtService {
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList());
     }
+
+    // ---- Extract Permissions ----
+    private Set<String> extractPermissions(UserDetails userDetails) {
+        return userDetails.getAuthorities()
+                .stream()
+                .map(GrantedAuthority::getAuthority).filter(Objects::nonNull)
+                .filter(authority -> !authority.startsWith("ROLE_")) // keep only permissions
+                .collect(Collectors.toSet());
+    }
+
 
     // ------- VALIDATION --------
     public boolean isValid(String token, UserDetails user) {

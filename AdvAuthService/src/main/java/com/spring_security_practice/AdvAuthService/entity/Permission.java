@@ -1,20 +1,22 @@
 package com.spring_security_practice.AdvAuthService.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.security.core.GrantedAuthority;
 
 @Entity
-@Table(name = "roles")
 @Getter
 @Setter
-public class Role implements GrantedAuthority {
+@NoArgsConstructor
+@AllArgsConstructor
+@Table(name="permission")
+public class Permission {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(unique = true, nullable = false)
     private String name;
-
 }
