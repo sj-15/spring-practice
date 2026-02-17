@@ -13,9 +13,11 @@ import java.util.Optional;
 public interface TokenRepository extends JpaRepository<Token, Long> {
     @Query("""
             select t from Token t inner join User u on t.user.id = u.id
-            where t.user.id = :userId and t.isLoggedOut = false
+            where t.user.id = :userId and t.revoked = false
             """)
     List<Token> findAllAccessTokensByUser(Long userId);
+
     Optional<Token> findByAccessToken(String token);
+
     Optional<Token> findByRefreshToken(String token);
 }

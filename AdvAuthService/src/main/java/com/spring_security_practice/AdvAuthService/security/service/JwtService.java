@@ -1,6 +1,8 @@
 package com.spring_security_practice.AdvAuthService.security.service;
 
 import com.spring_security_practice.AdvAuthService.entity.User;
+import com.spring_security_practice.AdvAuthService.exception.auth.RefreshTokenInvalidException;
+import com.spring_security_practice.AdvAuthService.exception.common.ValidationException;
 import com.spring_security_practice.AdvAuthService.repository.TokenRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
@@ -94,12 +96,12 @@ public class JwtService {
 
             boolean validToken = tokenRepository
                     .findByAccessToken(token)
-                    .map(t -> !t.isLoggedOut())
+                    .map(t -> !t.isRevoked())
                     .orElse(false);
 
             return (username.equals(user.getUsername())) && !isTokenExpired(token) && validToken;
-        } catch (JwtException | IllegalArgumentException ex) {
-            return false;
+        } catch (JwtException | IllegalArgumentException | ValidationException ex) {
+            throw new ValidationException();
         }
     }
 
@@ -109,12 +111,12 @@ public class JwtService {
 
             boolean validRefreshToken = tokenRepository
                     .findByRefreshToken(token)
-                    .map(t -> !t.isLoggedOut())
+                    .map(t -> !t.isRevoked())
                     .orElse(false);
 
             return (username.equals(user.getEmail())) && !isTokenExpired(token) && validRefreshToken;
-        } catch (JwtException | IllegalArgumentException ex) {
-            return false;
+        } catch (JwtException | IllegalArgumentException | RefreshTokenInvalidException ex) {
+            throw new RefreshTokenInvalidException();
         }
     }
 

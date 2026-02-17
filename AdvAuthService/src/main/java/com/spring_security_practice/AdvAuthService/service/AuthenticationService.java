@@ -12,6 +12,7 @@ import com.spring_security_practice.AdvAuthService.exception.common.ValidationEx
 import com.spring_security_practice.AdvAuthService.exception.user.DuplicateEmailException;
 import com.spring_security_practice.AdvAuthService.exception.user.UserNotFoundException;
 import com.spring_security_practice.AdvAuthService.model.AuthenticationResponse;
+import com.spring_security_practice.AdvAuthService.model.TokenType;
 import com.spring_security_practice.AdvAuthService.repository.RoleRepository;
 import com.spring_security_practice.AdvAuthService.repository.TokenRepository;
 import com.spring_security_practice.AdvAuthService.repository.UserRepository;
@@ -118,8 +119,9 @@ public class AuthenticationService {
         Token token = new Token();
         token.setAccessToken(accessToken);
         token.setRefreshToken(refreshToken);
-        token.setLoggedOut(false);
+        token.setRevoked(false);
         token.setUser(user);
+        token.setTokenType(TokenType.BEARER);
         tokenRepository.save(token);
     }
 
@@ -128,7 +130,7 @@ public class AuthenticationService {
         List<Token> tokens = tokenRepository.findAllAccessTokensByUser(user.getId());
         if (tokens.isEmpty()) return;
 
-        tokens.forEach(t -> t.setLoggedOut(true));
+        tokens.forEach(t -> t.setRevoked(true));
         tokenRepository.saveAll(tokens);
     }
 
@@ -140,23 +142,28 @@ public class AuthenticationService {
             throw new RefreshTokenInvalidException();
         }
 
-        String token = authHeader.substring(7);
-        String username = jwtService.extractUsername(token);
+        try {
 
-        User user = userRepository.findByEmail(username).orElseThrow(UserNotFoundException::new);
+            String token = authHeader.substring(7);
+            String username = jwtService.extractUsername(token);
 
-        if (jwtService.isValidRefreshToken(token, user)) {
-            UserDetails userDetails = org.springframework.security.core.userdetails.User
-                    .withUsername(user.getEmail())
-                    .password(user.getPassword())
-                    .authorities(user.getRoles())
-                    .build();
+            User user = userRepository.findByEmail(username).orElseThrow(UserNotFoundException::new);
 
-            String accessToken = jwtService.generateAccessToken(userDetails);
-            String refreshToken = jwtService.generateRefreshToken(userDetails);
-            saveUserToken(accessToken, refreshToken, user);
-            return new ResponseEntity<>(new AuthenticationResponse(accessToken, refreshToken), HttpStatus.OK);
+            if (jwtService.isValidRefreshToken(token, user)) {
+                UserDetails userDetails = org.springframework.security.core.userdetails.User
+                        .withUsername(user.getEmail())
+                        .password(user.getPassword())
+                        .authorities(user.getRoles())
+                        .build();
+
+                String accessToken = jwtService.generateAccessToken(userDetails);
+                String refreshToken = jwtService.generateRefreshToken(userDetails);
+                saveUserToken(accessToken, refreshToken, user);
+                return new ResponseEntity<>(new AuthenticationResponse(accessToken, refreshToken), HttpStatus.OK);
+            }
+        } catch (RefreshTokenInvalidException e) {
+            throw new RefreshTokenInvalidException();
         }
-        throw new RefreshTokenInvalidException();
+        throw new ResourceNotFoundException();
     }
 }
