@@ -66,8 +66,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             customAuthenticationEntryPoint.commence(request, response,
                     new BadCredentialsException("Invalid JWT token", ex));
         }
-
-
         filterChain.doFilter(request, response);
     }
 }
