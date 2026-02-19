@@ -30,6 +30,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Set;
 
@@ -80,6 +82,8 @@ public class AuthenticationService {
 
             UserDetails userDetails = buildUserDetails(user);
 
+            revokeAllUserToken(user);
+
             String accessToken = jwtService.generateAccessToken(userDetails);
             String refreshToken = jwtService.generateRefreshToken(userDetails);
 
@@ -102,6 +106,9 @@ public class AuthenticationService {
             User user = userRepository.findByEmail(request.getEmail()).orElseThrow(() -> new RuntimeException("User not found"));
 
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+
+            revokeAllUserToken(user);
+
             String accessToken = jwtService.generateAccessToken(userDetails);
             String refreshToken = jwtService.generateRefreshToken(userDetails);
 
@@ -120,7 +127,10 @@ public class AuthenticationService {
         token.setAccessToken(accessToken);
         token.setRefreshToken(refreshToken);
         token.setRevoked(false);
+        token.setExpired(false);
         token.setUser(user);
+        token.setAccessExpiry(jwtService.extractExpiration(accessToken).toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime());
+        token.setRefreshExpiry(jwtService.extractExpiration(refreshToken).toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime());
         token.setTokenType(TokenType.BEARER);
         tokenRepository.save(token);
     }
@@ -130,7 +140,10 @@ public class AuthenticationService {
         List<Token> tokens = tokenRepository.findAllAccessTokensByUser(user.getId());
         if (tokens.isEmpty()) return;
 
-        tokens.forEach(t -> t.setRevoked(true));
+        tokens.forEach(t -> {
+            t.setRevoked(true);
+            t.setExpired(true);
+        });
         tokenRepository.saveAll(tokens);
     }
 
@@ -155,6 +168,8 @@ public class AuthenticationService {
                         .password(user.getPassword())
                         .authorities(user.getRoles())
                         .build();
+
+                revokeAllUserToken(user);
 
                 String accessToken = jwtService.generateAccessToken(userDetails);
                 String refreshToken = jwtService.generateRefreshToken(userDetails);

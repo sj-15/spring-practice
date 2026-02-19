@@ -30,6 +30,7 @@ public class CustomLogoutHandler implements LogoutHandler {
 
         if(storedToken != null){
             storedToken.setRevoked(true);
+            storedToken.setExpired(true);
             tokenRepository.save(storedToken);
         }
 
