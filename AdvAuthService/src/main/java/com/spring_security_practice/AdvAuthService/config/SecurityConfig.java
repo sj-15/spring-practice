@@ -29,6 +29,17 @@ public class SecurityConfig {
     }
 
     @Bean
+    public SecurityFilterChain publicChain(HttpSecurity http) throws Exception {
+        http
+                .securityMatcher("/api/auth/**")
+                .csrf(AbstractHttpConfigurer::disable)
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/auth/**").permitAll()
+                );
+        return http.build();
+    }
+
+    @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .sessionManagement(smc -> smc
@@ -37,10 +48,6 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 //endpoints authorization
                 .authorizeHttpRequests(auth -> auth
-                        // === Public ===
-                        .requestMatchers(
-                                "/api/auth/**", "/api/v1/user/**"
-                        ).permitAll()
                         // === Admin ===
                         .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                         // === Admin & Support ===

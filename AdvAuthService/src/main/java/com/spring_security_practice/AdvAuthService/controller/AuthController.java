@@ -25,17 +25,17 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<AuthenticationResponse> createUser(@Valid @RequestBody RegisterRequestDTO user) {
-            return ResponseEntity.status(HttpStatus.CREATED).body(authenticationService.register(user));
+        return ResponseEntity.status(HttpStatus.CREATED).body(authenticationService.register(user));
     }
 
     @PostMapping("/login")
     public ResponseEntity<AuthenticationResponse> login(@Valid @RequestBody LoginRequeestDTO user) {
-            return ResponseEntity.ok(authenticationService.authenticate(user));
+        return ResponseEntity.ok(authenticationService.authenticate(user));
     }
 
 
     @PostMapping("/refresh_token")
-    public ResponseEntity refreshToken(HttpServletRequest request, HttpServletResponse response){
-        return authenticationService.refreshToken(request, response);
+    public ResponseEntity<Object> refreshToken(HttpServletRequest request, HttpServletResponse response) {
+        return ResponseEntity.ok(authenticationService.refreshToken(request, response));
     }
 }
