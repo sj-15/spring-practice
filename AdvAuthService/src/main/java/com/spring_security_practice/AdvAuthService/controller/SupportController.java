@@ -1,43 +1,44 @@
 package com.spring_security_practice.AdvAuthService.controller;
 
+import com.spring_security_practice.AdvAuthService.dto.SupportUserUpdateDTO;
 import com.spring_security_practice.AdvAuthService.entity.User;
-import com.spring_security_practice.AdvAuthService.exception.user.UserNotFoundException;
-import com.spring_security_practice.AdvAuthService.repository.UserRepository;
+import com.spring_security_practice.AdvAuthService.service.UserService;
 import jakarta.validation.Valid;
+import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/support")
+@AllArgsConstructor
 public class SupportController {
-    private final UserRepository userRepository;
+    private final UserService userService;
 
-    public SupportController(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
 
     @GetMapping("/all")
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPPORT')")
     public ResponseEntity<List<User>> getAllUsers() {
-        return ResponseEntity.ok(userRepository.findAll());
+        return userService.getAllUsers();
     }
 
     @GetMapping("/{email}")
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPPORT')")
     public ResponseEntity<User> getUser(@Valid @PathVariable String email) {
-        return ResponseEntity.ok(userRepository
-                .findByEmail(email).orElseThrow(UserNotFoundException::new));
+        return userService.getUserByEmail(email);
     }
 
     @GetMapping("/readuser")
     @PreAuthorize("hasAuthority('READ_USER')")
-    public ResponseEntity<String> readUser(){
+    public ResponseEntity<String> readUser() {
         return ResponseEntity.ok("Can read user");
+    }
+
+    @PutMapping("/updateuser/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPPORT') and hasAuthority('WRITE_USER')")
+    public ResponseEntity<Object> updateUser(@Valid @PathVariable Long id, @Valid @RequestBody SupportUserUpdateDTO dto) {
+        return userService.supportUpdateUser(id, dto);
     }
 }
