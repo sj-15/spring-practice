@@ -3,6 +3,7 @@ package com.spring_security_practice.AdvAuthService.service;
 import com.spring_security_practice.AdvAuthService.entity.Permission;
 import com.spring_security_practice.AdvAuthService.entity.Role;
 import com.spring_security_practice.AdvAuthService.entity.User;
+import com.spring_security_practice.AdvAuthService.model.CustomUserDetails;
 import com.spring_security_practice.AdvAuthService.repository.UserRepository;
 import org.jspecify.annotations.NonNull;
 import org.springframework.security.core.GrantedAuthority;
@@ -25,22 +26,32 @@ public class CustomUserDetailsService implements UserDetailsService {
     }
 
     @Override
-    public UserDetails loadUserByUsername(@NonNull String username) throws UsernameNotFoundException {
-        User user = userRepository.findByEmail(username).orElseThrow(() -> new RuntimeException("User not found"));
-        // ---- Convert Roles & Permissions to GrantedAuthority ----
+    public UserDetails loadUserByUsername(@NonNull String username)
+            throws UsernameNotFoundException {
+
+        User user = userRepository.findByEmail(username)
+                .orElseThrow(() ->
+                        new UsernameNotFoundException("User not found with email: " + username)
+                );
+
         Set<GrantedAuthority> authorities = new HashSet<>();
 
         for (Role role : user.getRoles()) {
 
-            // Add ROLE
+            // Add ROLE (ensure proper prefix if needed)
             authorities.add(new SimpleGrantedAuthority(role.getName()));
 
-            // Add PERMISSIONS of the role
+            // Add PERMISSIONS of that role
             for (Permission permission : role.getPermissions()) {
                 authorities.add(new SimpleGrantedAuthority(permission.getName()));
             }
         }
-        return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(), authorities);
-    }
 
+        return new CustomUserDetails(
+                user.getId(),
+                user.getEmail(),
+                user.getPassword(),
+                authorities
+        );
+    }
 }

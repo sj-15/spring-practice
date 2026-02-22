@@ -136,7 +136,7 @@ public class AuthenticationService {
     }
 
     // ----- Revoke All User Token ------
-    private void revokeAllUserToken(User user) {
+    public void revokeAllUserToken(User user) {
         List<Token> tokens = tokenRepository.findAllAccessTokensByUser(user.getId());
         if (tokens.isEmpty()) return;
 

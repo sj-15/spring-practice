@@ -48,10 +48,12 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 //endpoints authorization
                 .authorizeHttpRequests(auth -> auth
+                        // === User ===
+                        .requestMatchers("/api/v1/user/**").hasRole("USER")
                         // === Admin ===
                         .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
-                        // === Admin & Support ===
-                        .requestMatchers("/api/v1/support/**").hasAnyRole("ADMIN", "SUPPORT")
+                        // === Support ===
+                        .requestMatchers("/api/v1/support/**").hasRole("SUPPORT")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
