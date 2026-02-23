@@ -4,7 +4,7 @@ import com.spring_security_practice.AdvAuthService.dto.SupportUserUpdateDTO;
 import com.spring_security_practice.AdvAuthService.entity.User;
 import com.spring_security_practice.AdvAuthService.service.UserService;
 import jakarta.validation.Valid;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -13,7 +13,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/support")
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class SupportController {
     private final UserService userService;
 

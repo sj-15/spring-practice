@@ -31,3 +31,7 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# RSA Keys
+src/main/resources/key/private_key.pem
+src/main/resources/key/public_key.pem
