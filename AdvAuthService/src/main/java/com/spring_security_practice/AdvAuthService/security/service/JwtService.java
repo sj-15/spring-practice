@@ -7,25 +7,26 @@ import com.spring_security_practice.AdvAuthService.repository.TokenRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.io.Decoders;
-import io.jsonwebtoken.security.Keys;
-import jakarta.annotation.PostConstruct;
+
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
-import javax.crypto.SecretKey;
+import java.security.interfaces.RSAPrivateKey;
+import java.security.interfaces.RSAPublicKey;
 import java.time.Instant;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class JwtService {
 
-    @Value("${spring.security.secret}")
-    private String SECRET_KEY;
+    private final RSAPrivateKey rsaPrivateKey;
+    private final RSAPublicKey rsaPublicKey;
 
     @Value("${spring.security.access-token-expiration}")
     private Long accessTokenExpiration;
@@ -33,18 +34,8 @@ public class JwtService {
     @Value("${spring.security.refresh-token-expiration}")
     private Long refreshTokenExpiration;
 
-    private SecretKey signingKey;
     private final TokenRepository tokenRepository;
 
-    public JwtService(TokenRepository tokenRepository) {
-        this.tokenRepository = tokenRepository;
-    }
-
-    @PostConstruct
-    public void init() {
-        byte[] keyBytes = Decoders.BASE64URL.decode(SECRET_KEY);
-        this.signingKey = Keys.hmacShaKeyFor(keyBytes);
-    }
 
     public String generateAccessToken(UserDetails userDetails) {
         return generateToken(userDetails, accessTokenExpiration);
@@ -67,7 +58,7 @@ public class JwtService {
                 .subject(userDetails.getUsername())
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(now.plusMillis(tokenExpiration)))
-                .signWith(signingKey)
+                .signWith(rsaPrivateKey, Jwts.SIG.RS256)
                 .compact();
         return token;
     }
@@ -137,7 +128,7 @@ public class JwtService {
     private Claims extractAllClaims(String token) {
         return Jwts
                 .parser()
-                .verifyWith(signingKey)
+                .verifyWith(rsaPublicKey)
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();

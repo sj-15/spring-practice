@@ -3,14 +3,13 @@ package com.spring_security_practice.AdvAuthService.controller;
 import com.spring_security_practice.AdvAuthService.dto.AdminUserUpdateDTO;
 import com.spring_security_practice.AdvAuthService.service.UserService;
 import jakarta.validation.Valid;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/admin")
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class AdminController {
 
     private final UserService userService;

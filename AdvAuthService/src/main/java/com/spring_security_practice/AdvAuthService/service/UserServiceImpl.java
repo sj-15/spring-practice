@@ -12,7 +12,7 @@ import com.spring_security_practice.AdvAuthService.exception.user.UserNotFoundEx
 import com.spring_security_practice.AdvAuthService.repository.RoleRepository;
 import com.spring_security_practice.AdvAuthService.repository.UserRepository;
 import com.spring_security_practice.AdvAuthService.security.util.SecurityUtils;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Set;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
