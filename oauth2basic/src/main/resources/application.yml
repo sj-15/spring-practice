@@ -1,0 +1,27 @@
+spring:
+  datasource:
+    url: jdbc:sqlite:D:/database/blog/oauth.db
+    driver-class-name: org.sqlite.JDBC
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.community.dialect.SQLiteDialect
+  security:
+    oauth2:
+      client:
+        registration:
+          keycloak:
+            client-id: oauth2_basic
+            client-secret: kvdBzNR2x9l6HD09bmc7DgRFVewrEmkw
+            scope:
+              - openid
+              - profile
+              - email
+            authorization-grant-type: authorization_code
+            redirect-uri: http://localhost:8090/login/oauth2/code/keycloak
+        provider:
+          keycloak:
+            issuer-uri: http://localhost:8082/realms/OAuth2_practice
+            user-name-attribute: preferred_username
